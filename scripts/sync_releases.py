@@ -77,8 +77,6 @@ for upstream in reversed(releases):
     try:
         metadata = {k: upstream[k] for k in ('id', 'tag_name', 'name', 'body', 'published_at', 'prerelease', 'html_url', 'assets')}
         body = f'Original release: {upstream["html_url"]}\n\n' + (upstream['body'] or '')
-        if tag == '28':
-            body += '\n\nSupplemental IPA/TIPA for 3.0.12-28 were supplied from the backup owner\'s local files. ZIP integrity and SHA256 verified; these supplemental files were not obtained from upstream release assets.'
         release = ensure_release(tag, upstream['name'] or tag, body, upstream['prerelease'])
         assets = {a['name']: a for a in listing(f'/repos/{TARGET}/releases/{release["id"]}/assets')}
         for asset in upstream['assets']:
