@@ -73,7 +73,7 @@ errors = []
 copied = 0
 releases = listing(f'/repos/{UPSTREAM}/releases')
 for upstream in reversed(releases):
-    tag = upstream['tag_name']
+    tag = upstream['name'] or upstream['tag_name']
     try:
         metadata = {k: upstream[k] for k in ('id', 'tag_name', 'name', 'body', 'published_at', 'prerelease', 'html_url', 'assets')}
         body = f'Original release: {upstream["html_url"]}\n\n' + (upstream['body'] or '')
@@ -123,7 +123,7 @@ try:
     # A Git bundle preserves all branches, tags and their complete reachable history.
     refs = subprocess.check_output(['git', 'ls-remote', f'https://github.com/{UPSTREAM}.git'], text=True)
     fingerprint = hashlib.sha256(refs.encode()).hexdigest()
-    source = ensure_release('archive-source-history', 'Full upstream Git source history',
+    source = ensure_release('0-source-history', 'Full upstream Git source history',
                             f'Full Git bundle for https://github.com/{UPSTREAM}\nRestore: git clone source.bundle\nRefs SHA256: {fingerprint}')
     name = f'source-{fingerprint}.bundle'
     assets = listing(f'/repos/{TARGET}/releases/{source["id"]}/assets')
@@ -139,7 +139,7 @@ except Exception as e:
 
 try:
     latest = request(f'/repos/{UPSTREAM}/releases/latest')
-    mirrored = request(f'/repos/{TARGET}/releases/tags/{urllib.parse.quote(latest["tag_name"], safe="")}')
+    mirrored = request(f'/repos/{TARGET}/releases/tags/{urllib.parse.quote(latest["name"] or latest["tag_name"], safe="")}')
     request(f'/repos/{TARGET}/releases/{mirrored["id"]}', 'PATCH', {'make_latest': 'true'})
 except Exception as e:
     errors.append(f'Latest release marker: {e}')
