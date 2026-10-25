@@ -1,0 +1,31 @@
+name: Archive upstream releases and Git history
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '19 */6 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: release-backup
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Archive all releases and source history
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_REPOSITORY: roothide/Dopamine-roothide
+        run: python -u scripts/sync_releases.py
+      - name: Save synchronization report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sync-report
+          path: sync-report.txt
+
